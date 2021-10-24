@@ -98,9 +98,8 @@
                                         <td>{{ people.name }}</td>
                                         <td>{{ people.numberPhone }}</td>
                                         <td>
-
                                             <v-btn tile color="success">
-                                                <v-icon left>
+                                                <v-icon left v-on:click.prevent="savePeople(people)">
                                                     mdi-pencil
                                                 </v-icon>
                                                 Editar
@@ -108,7 +107,7 @@
 
                                         </td>
                                         <td>
-                                            <v-btn tile color="red">
+                                            <v-btn tile color="red"  v-on:click.prevent="removeItem(people)">
                                                 <v-icon left>
                                                     mdi-pencil
                                                 </v-icon>
@@ -155,6 +154,17 @@
                         this.peoples = peoples
                         localStorage.setItem('listsPeople', JSON.stringify(peoples))
                         // incluir aqui um cdn de toasted
+                    },
+                    // editPeople(people) {
+                    //     let peoples = localStorage.getItem('listsPeople')
+                    //     if(peoples) {
+                    //         peoples = JSON.parse(peoples)
+                    //         peoples.push(people)
+                    //     }
+                    // }
+                    removeItem(people) {
+                        localStorage.removeItem('name');
+                        localStorage.removeItem('numberPhone');
                     }
                 }
             })
