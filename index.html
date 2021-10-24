@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+
+    <style>
+        #app {
+            height: 100vh;
+            display: grid;
+        }
+
+        .title {
+            margin-top: 20vh;
+            text-align: center;
+            -ms-text-justify: auto;
+            margin-bottom: 12px;
+        }
+
+        .botaoAdd {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <v-app>
+            <v-container class="title">Lista de contatos</v-container>
+            <v-main>
+                <template>
+                    <v-row justify="center">
+                        <v-dialog v-model="dialog" persistent max-width="600px">
+                            <template v-slot:activator="{ on, attrs }">
+
+                                <v-btn color="purple" dark v-bind="attrs" v-on="on" class="botaoAdd">
+                                    +
+                                </v-btn>
+                            </template>
+                            <v-card>
+                                <v-card-title>
+                                    <span class="text-h5">Cadastro de contatos</span>
+                                </v-card-title>
+                                <v-card-text @submit.prevent="onSubmit">
+                                    <v-container>
+                                        <v-row>
+                                            <v-col cols="12">
+                                                <v-text-field label="Insira o nome*" required v-model="people.name">
+                                                </v-text-field>
+                                            </v-col>
+                                            <v-col cols="12">
+                                                <v-col cols="12" sm="6">
+                                                    <v-text-field label="Telefone* (xx) xxxx-xxxx" required
+                                                        v-model="people.numberPhone"></v-text-field>
+                                                </v-col>
+                                        </v-row>
+                                    </v-container>
+                                    <small>*Os campos marcados são obrigatórios</small>
+                                </v-card-text>
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <v-btn color="purple darken-1" text @click="dialog = false">
+                                        Cancelar
+                                    </v-btn>
+                                    <v-btn color="purple darken-1" text @click="dialog = false"
+                                        v-on:click.prevent="savePeople(people)">
+                                        Salvar
+                                    </v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </v-dialog>
+                    </v-row>
+                    <template>
+                        <v-simple-table height="300px" width="100px">
+                            <template v-slot:default>
+                                <thead>
+                                    <tr>
+                                        <th class="text-left">
+                                            Nome
+                                        </th>
+                                        <th class="text-left">
+                                            Telefone
+                                        </th>
+                                        <th class="text-left">
+                                            Editar
+                                        </th>
+                                        <th class="text-left">
+                                            Remover
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(people, idx) in peoples" :key="idx">
+                                        <td>{{ people.name }}</td>
+                                        <td>{{ people.numberPhone }}</td>
+                                        <td>
+
+                                            <v-btn tile color="success">
+                                                <v-icon left>
+                                                    mdi-pencil
+                                                </v-icon>
+                                                Editar
+                                            </v-btn>
+
+                                        </td>
+                                        <td>
+                                            <v-btn tile color="red">
+                                                <v-icon left>
+                                                    mdi-pencil
+                                                </v-icon>
+                                                Remover
+                                            </v-btn>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </template>
+                        </v-simple-table>
+                    </template>
+                </template>
+            </v-main>
+        </v-app>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <script>
+        window.onload = function () {
+            const app = new Vue({
+                el: '#app',
+                vuetify: new Vuetify(),
+                data: () => ({
+                    dialog: false,
+                    peoples: [],
+                    people: {
+                        name: '',
+                        numberPhone: '',
+                    }
+                }),
+                created() {
+                    this.peoples = JSON.parse(localStorage.getItem('listsPeople'));
+                },
+                methods: {
+                    savePeople(people) {
+                        let peoples = localStorage.getItem('listsPeople')
+                        if (peoples) {
+                            peoples = JSON.parse(peoples)
+                            peoples.push(people)
+                        } else {
+                            peoples = [people]
+                        }
+                        this.peoples = peoples
+                        localStorage.setItem('listsPeople', JSON.stringify(peoples))
+                        // incluir aqui um cdn de toasted
+                    }
+                }
+            })
+        };
+    </script>
+
+</body>
+
+</html>
