@@ -24,6 +24,10 @@
         .botaoAdd {
             margin-bottom: 20px;
         }
+        a {
+            text-decoration: none;
+        }
+
     </style>
 </head>
 
@@ -37,25 +41,29 @@
                         <v-dialog v-model="dialog" persistent max-width="600px">
                             <template v-slot:activator="{ on, attrs }">
 
-                                <v-btn color="purple" dark v-bind="attrs" v-on="on" class="botaoAdd">
+                                <v-btn color="purple" dark v-bind="attrs" v-on="on" v-if="!editarReally">
                                     +
+                                </v-btn>
+
+                                <v-btn color="purple" dark v-bind="attrs" v-on="on" v-else>
+                                    Editar
                                 </v-btn>
                             </template>
                             <v-card>
                                 <v-card-title>
                                     <span class="text-h5">Cadastro de contatos</span>
                                 </v-card-title>
-                                <v-card-text @submit.prevent="onSubmit">
+                                <v-card-text>
                                     <v-container>
                                         <v-row>
                                             <v-col cols="12">
-                                                <v-text-field label="Insira o nome*" required v-model="people.name">
+                                                <v-text-field label="Insira o nome*" required v-model="contact.name">
                                                 </v-text-field>
                                             </v-col>
                                             <v-col cols="12">
                                                 <v-col cols="12" sm="6">
                                                     <v-text-field label="Telefone* (xx) xxxx-xxxx" required
-                                                        v-model="people.numberPhone"></v-text-field>
+                                                        v-model="contact.numberPhone"></v-text-field>
                                                 </v-col>
                                         </v-row>
                                     </v-container>
@@ -66,8 +74,13 @@
                                     <v-btn color="purple darken-1" text @click="dialog = false">
                                         Cancelar
                                     </v-btn>
-                                    <v-btn color="purple darken-1" text @click="dialog = false"
-                                        v-on:click.prevent="savePeople(people)">
+                                    <v-btn color="purple darken-1" text @click="dialog = false" v-if="editarReally">
+                                        Ok
+                                    </v-btn>
+                                    <v-btn color="purple darken-1" text
+                                        v-if="!isEdit"
+                                        @click.prevent="saveContact(contact)"
+                                        >
                                         Salvar
                                     </v-btn>
                                 </v-card-actions>
@@ -94,24 +107,20 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="(people, idx) in peoples" :key="idx">
-                                        <td>{{ people.name }}</td>
-                                        <td>{{ people.numberPhone }}</td>
+                                    <tr v-for="contact in contacts" class="editButton">
+                                        <td>{{ contact.name }}</td>
+                                        <td>{{ contact.numberPhone }}</td>
                                         <td>
                                             <v-btn tile color="success">
-                                                <v-icon left v-on:click.prevent="savePeople(people)">
-                                                    mdi-pencil
-                                                </v-icon>
-                                                Editar
-                                            </v-btn>
-
-                                        </td>
-                                        <td>
-                                            <v-btn tile color="red"  v-on:click.prevent="removeItem(people)">
                                                 <v-icon left>
                                                     mdi-pencil
                                                 </v-icon>
-                                                Remover
+                                                <a href="#" @click.prevent="editContact(contact)" @click="editarReally=!editarReally">Editar</a>
+                                            </v-btn>
+                                        </td>
+                                        <td>
+                                            <v-btn tile color="red" elevation="2" @click.prevent="removeContact(contact.id)">
+                                                <a href="#">Remover</a>
                                             </v-btn>
                                         </td>
                                     </tr>
@@ -131,41 +140,56 @@
             const app = new Vue({
                 el: '#app',
                 vuetify: new Vuetify(),
-                data: () => ({
-                    dialog: false,
-                    peoples: [],
-                    people: {
+                data: {
+                    contacts: [],
+                    name: 'Adicione seus contatos :)',
+                    contact: {
+                        id: '',
                         name: '',
-                        numberPhone: '',
-                    }
-                }),
+                        numberPhone: ''
+                    },
+                    isEdit: false,
+                    dialog: false,
+                    editarReally: false
+                },
                 created() {
-                    this.peoples = JSON.parse(localStorage.getItem('listsPeople'));
+                    this.contacts = JSON.parse(localStorage.getItem('contactsApp'))
                 },
                 methods: {
-                    savePeople(people) {
-                        let peoples = localStorage.getItem('listsPeople')
-                        if (peoples) {
-                            peoples = JSON.parse(peoples)
-                            peoples.push(people)
-                        } else {
-                            peoples = [people]
+                    saveContact(contact) {
+                        let contacts = localStorage.getItem('contactsApp')
+                        contact.id = new Date().getTime()
+
+                        if(contacts) {
+                            contacts = JSON.parse(contacts)
+                            contacts.push(contact)
                         }
-                        this.peoples = peoples
-                        localStorage.setItem('listsPeople', JSON.stringify(peoples))
-                        // incluir aqui um cdn de toasted
+                        else {
+                            contacts = [contact]
+                        }
+                        this.contacts = contacts
+
+                        localStorage.setItem('contactsApp', JSON.stringify(contacts))
+                        location.reload();
                     },
-                    // editPeople(people) {
-                    //     let peoples = localStorage.getItem('listsPeople')
-                    //     if(peoples) {
-                    //         peoples = JSON.parse(peoples)
-                    //         peoples.push(people)
-                    //     }
-                    // }
-                    removeItem(people) {
-                        localStorage.removeItem('name');
-                        localStorage.removeItem('numberPhone');
-                    }
+                    editContact(contact) {
+                        this.contact = contact;
+                        this.isEdit = true;
+                    },
+                    removeContact(contactId) {
+                        let contacts = localStorage.getItem('contactsApp')
+                        if(!contacts) return ;
+
+                        contacts = JSON.parse(contacts)
+
+                        contacts = contacts.filter((contact) => {
+                            return contact.id != contactId
+                        });
+
+                        this.contacts  = contacts
+
+                        localStorage.setItem('contactsApp', JSON.stringify(contacts))
+                    },
                 }
             })
         };
