@@ -24,10 +24,10 @@
         .botaoAdd {
             margin-bottom: 20px;
         }
+
         a {
             text-decoration: none;
         }
-
     </style>
 </head>
 
@@ -56,14 +56,17 @@
                                 <v-card-text>
                                     <v-container>
                                         <v-row>
-                                            <v-col cols="12">
-                                                <v-text-field label="Insira o nome*" required v-model="contact.name">
+                                            <v-col cols="12" id="form">
+                                                <v-text-field label="Insira o nome*" required v-model="contact.name"
+                                                    id="form">
                                                 </v-text-field>
                                             </v-col>
                                             <v-col cols="12">
                                                 <v-col cols="12" sm="6">
                                                     <v-text-field label="Telefone* (xx) xxxx-xxxx" required
-                                                        v-model="contact.numberPhone"></v-text-field>
+                                                        type="text" v-model="contact.numberPhone"
+                                                        @input="mask()" :value="phoneNumber" id="phoneno">
+                                                    </v-text-field>
                                                 </v-col>
                                         </v-row>
                                     </v-container>
@@ -77,10 +80,8 @@
                                     <v-btn color="purple darken-1" text @click="dialog = false" v-if="editarReally">
                                         Ok
                                     </v-btn>
-                                    <v-btn color="purple darken-1" text
-                                        v-if="!isEdit"
-                                        @click.prevent="saveContact(contact)"
-                                        >
+                                    <v-btn color="purple darken-1" text v-if="!isEdit" v-show="contact.name.length > 0 "
+                                        @click.prevent="saveContact(contact)" @click.prevent="isEmpty()">
                                         Salvar
                                     </v-btn>
                                 </v-card-actions>
@@ -115,11 +116,13 @@
                                                 <v-icon left>
                                                     mdi-pencil
                                                 </v-icon>
-                                                <a href="#" @click.prevent="editContact(contact)" @click="editarReally=!editarReally">Editar</a>
+                                                <a href="#" @click.prevent="editContact(contact)"
+                                                    @click="editarReally=!editarReally">Editar</a>
                                             </v-btn>
                                         </td>
                                         <td>
-                                            <v-btn tile color="red" elevation="2" @click.prevent="removeContact(contact.id)">
+                                            <v-btn tile color="red" elevation="2"
+                                                @click.prevent="removeContact(contact.id)">
                                                 <a href="#">Remover</a>
                                             </v-btn>
                                         </td>
@@ -150,7 +153,8 @@
                     },
                     isEdit: false,
                     dialog: false,
-                    editarReally: false
+                    editarReally: false,
+                    phoneNumber: ''
                 },
                 created() {
                     this.contacts = JSON.parse(localStorage.getItem('contactsApp'))
@@ -160,11 +164,10 @@
                         let contacts = localStorage.getItem('contactsApp')
                         contact.id = new Date().getTime()
 
-                        if(contacts) {
+                        if (contacts) {
                             contacts = JSON.parse(contacts)
                             contacts.push(contact)
-                        }
-                        else {
+                        } else {
                             contacts = [contact]
                         }
                         this.contacts = contacts
@@ -178,7 +181,7 @@
                     },
                     removeContact(contactId) {
                         let contacts = localStorage.getItem('contactsApp')
-                        if(!contacts) return ;
+                        if (!contacts) return;
 
                         contacts = JSON.parse(contacts)
 
@@ -186,10 +189,36 @@
                             return contact.id != contactId
                         });
 
-                        this.contacts  = contacts
+                        this.contacts = contacts
 
                         localStorage.setItem('contactsApp', JSON.stringify(contacts))
                     },
+                    IsEmpty() {
+                        if (document.getElementById('form').value === '') {
+                            alert('empty');
+                        }
+                    },
+                    mask() {
+                        const phoneNoRef = document.querySelector('#phoneno');
+                        phoneNoRef.addEventListener('keypress', (evt) => {
+                            const code = evt.keyCode;
+                            const val = evt.currentTarget.value;
+                            const len = val.length;
+                            
+                            if (!((code >= 48 && code <= 57) || code === 8)) {
+                                evt.preventDefault();
+                            }
+                            if (len === 2 || len === 7) {
+                                console.log('add a hyphen');
+                                evt.currentTarget.value += '-'
+                            }
+                            if (len === 13) {
+                                console.log('do not allow any more');
+                                evt.preventDefault();
+                            }
+                        });
+                    }
+
                 }
             })
         };
