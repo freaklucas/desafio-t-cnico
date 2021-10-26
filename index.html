@@ -63,9 +63,9 @@
                                             </v-col>
                                             <v-col cols="12">
                                                 <v-col cols="12" sm="6">
-                                                    <v-text-field label="Telefone* (xx) xxxx-xxxx" required
-                                                        type="text" v-model="contact.numberPhone"
-                                                        @input="mask()" :value="phoneNumber" id="phoneno">
+                                                    <v-text-field label="Telefone* (xx) xxxx-xxxx" required type="text"
+                                                        v-model="contact.numberPhone" @input="mask()"
+                                                        :value="phoneNumber" id="phoneno" @keypress="isNumber">
                                                     </v-text-field>
                                                 </v-col>
                                         </v-row>
@@ -80,7 +80,7 @@
                                     <v-btn color="purple darken-1" text @click="dialog = false" v-if="editarReally">
                                         Ok
                                     </v-btn>
-                                    <v-btn color="purple darken-1" text v-if="!isEdit" v-show="contact.name.length > 0 "
+                                    <v-btn color="purple darken-1" text v-if="!isEdit" v-show="contact.name.length > 2 "
                                         @click.prevent="saveContact(contact)" @click.prevent="isEmpty()">
                                         Salvar
                                     </v-btn>
@@ -110,7 +110,7 @@
                                 <tbody>
                                     <tr v-for="contact in contacts" class="editButton">
                                         <td>{{ contact.name }}</td>
-                                        <td>{{ contact.numberPhone }}</td>
+                                        <td><span id="blue">{{ contact.numberPhone }}</span></td>
                                         <td>
                                             <v-btn tile color="success">
                                                 <v-icon left>
@@ -204,7 +204,7 @@
                             const code = evt.keyCode;
                             const val = evt.currentTarget.value;
                             const len = val.length;
-                            
+
                             if (!((code >= 48 && code <= 57) || code === 8)) {
                                 evt.preventDefault();
                             }
@@ -216,8 +216,25 @@
                                 console.log('do not allow any more');
                                 evt.preventDefault();
                             }
+
+                            if(evt.currentTarget.value === '11') {
+                                document.getElementById("blue").style.color = "blue";
+                            }
                         });
-                    }
+                    },
+                    isNumber(val) {
+                        if (isNaN(Number(val.key))) {
+                            return val.preventDefault();
+                        }
+                    },
+                    divColorChange() {
+                        const anyString = this.contact.numberPhone
+                        if((anyString.substring(0,2) == 11)) {
+                            document.getElementById('blue').style.color.text = '#FF0000'
+                        }
+
+                        console.log(contact.numberPhone)
+                    },
 
                 }
             })
