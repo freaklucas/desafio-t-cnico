@@ -64,8 +64,8 @@
                                             <v-col cols="12">
                                                 <v-col cols="12" sm="6">
                                                     <v-text-field label="Telefone* (xx) xxxx-xxxx" required type="text"
-                                                        v-model="contact.numberPhone" @input="mask()"
-                                                        :value="phoneNumber" id="phoneno" @keypress="isNumber">
+                                                        v-model="contact.numberPhone" id="telefone"
+                                                        pattern="\([0-9]{2}\) [0-9]{4}-[0-9]{4}">
                                                     </v-text-field>
                                                 </v-col>
                                         </v-row>
@@ -145,7 +145,7 @@
                 vuetify: new Vuetify(),
                 data: {
                     contacts: [],
-                    name: 'Adicione seus contatos :)',
+                    name: 'Adicione seus contatos',
                     contact: {
                         id: '',
                         name: '',
@@ -154,12 +154,44 @@
                     isEdit: false,
                     dialog: false,
                     editarReally: false,
-                    phoneNumber: ''
+                    phoneNumber: '',
+                    objectName: {},
                 },
                 created() {
                     this.contacts = JSON.parse(localStorage.getItem('contactsApp'))
                 },
+                watch: {
+                    mask() {
+                        let input = this.$refs.phone.$refs.input
+                        requestAnimationFrame(() => {
+                            input.selectionStart = input.value.length
+                        })
+                    }
+                },
+                computed: {
+                    mask() {
+                        switch (true) {
+                            case this.phone.length <= 8:
+                                return '####-#####'
+                            case this.phone.length === 9:
+                                return '#####-#####'
+                            case this.phone.length === 10:
+                                return '(##) ####-#####'
+                            default:
+                                return '(##) #####-####'
+                        }
+                    }
+                },
                 methods: {
+                    formatPhoneNumber(propertyName) {
+                        var x = this.objectName[propertyName]
+                            .replace(/\D/g, "")
+                            .match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
+
+                        this.objectName[propertyName] = !x[2] ?
+                            x[1] : "(" + x[1] + ") " + x[2] + (x[3] ? "-" + x[3] : "");
+                    },
+
                     saveContact(contact) {
                         let contacts = localStorage.getItem('contactsApp')
                         contact.id = new Date().getTime()
@@ -198,36 +230,81 @@
                             alert('empty');
                         }
                     },
-                    mask() {
-                        const phoneNoRef = document.querySelector('#phoneno');
-                        phoneNoRef.addEventListener('keypress', (evt) => {
-                            const code = evt.keyCode;
-                            const val = evt.currentTarget.value;
-                            const len = val.length;
-
-                            if (!((code >= 48 && code <= 57) || code === 8)) {
-                                evt.preventDefault();
+                    mascaraTelefone(campo) {
+                        function trata(valor, isOnBlur) {
+                            valor = valor.replace(/\D/g, "");
+                            valor = valor.replace(/^(\d{2})(\d)/g, "($1)$2");
+                            if (isOnBlur) {
+                                valor = valor.replace(/(\d)(\d{4})$/, "$1-$2");
+                            } else {
+                                valor = valor.replace(/(\d)(\d{3})$/, "$1-$2");
                             }
-                            if (len === 2 || len === 7) {
-                                console.log('add a hyphen');
-                                evt.currentTarget.value += '-'
-                            }
-                            if (len === 13) {
-                                console.log('do not allow any more');
-                                evt.preventDefault();
-                            }
-
-                            if(evt.currentTarget.value === '11') {
-                                document.getElementById("blue").style.color = "blue";
-                            }
-                        });
-                    },
-                    isNumber(val) {
-                        if (isNaN(Number(val.key))) {
-                            return val.preventDefault();
+                            return valor;
                         }
+                        campo.onkeypress = function (evt) {
+                            var code = (window.event) ? window.event.keyCode : evt.which;
+                            var valor = this.value
+                            if (code > 57 || (code < 48 && code != 8)) {
+                                return false;
+                            } else {
+                                this.value = trata(valor, false);
+                            }
+                        }
+                        campo.onblur = function () {
+                            var valor = this.value;
+                            if (valor.length < 13) {
+                                this.value = ""
+                            } else {
+                                this.value = trata(this.value, true);
+                            }
+                        }
+                        campo.maxLength = 14;
                     },
-                }
+
+
+                    // mask() {
+                    //     const phoneNoRef = document.querySelector('#phoneno');
+                    //     phoneNoRef.addEventListener('keypress', (evt) => {
+                    //         const code = evt.keyCode;
+                    //         const val = evt.currentTarget.value;
+                    //         const len = val.length;
+
+                    //         if (!((code >= 48 && code <= 57) || code === 8)) {
+                    //             evt.preventDefault();
+                    //         }
+                    //         if (len === 2 || len === 7) {
+                    //             evt.currentTarget.value += '-'
+                    //         }
+                    //     });
+                    // },
+                    // mascara(o, f) {
+                    //     v_obj = o
+                    //     v_fun = f
+                    //     setTimeout("execmascara()", 1)
+                    // },
+
+                    // execmascara() {
+                    //     v_obj.value = v_fun(v_obj.value)
+                    // },
+
+                    // mtel(v) {
+                    //     v = v.replace(/D/g, ""); //Remove tudo o que não é dígito
+                    //     v = v.replace(/^(d{2})(d)/g,
+                    //         "($1) $2"); //Coloca parênteses em volta dos dois primeiros dígitos
+                    //     v = v.replace(/(d)(d{4})$/,
+                    //         "$1-$2"); //Coloca hífen entre o quarto e o quinto dígitos
+                    //     return v;
+                    // },
+
+                    // id(el) {
+                    //     return document.getElementById(el);
+                    // },
+                    // carregar() {
+                    //     id('telefone').onkeypress = function () {
+                    //         mascara(this, mtel);
+                    //     }
+                    // }
+                },
             })
         };
     </script>
